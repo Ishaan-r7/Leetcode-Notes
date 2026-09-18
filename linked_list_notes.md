@@ -176,6 +176,190 @@ Roles:
 dummy = permanently remembers the start
 tail  = moves as the result list grows
 ```
+## Dummy + Tail: Existing Node vs New Node
+
+This distinction is important.
+
+### Case 1 — We already have a node
+
+Example: **Merge Two Sorted Lists**
+
+```python
+tail.next = list1
+tail = tail.next
+```
+
+Here, `list1` is already a `ListNode`.
+
+Example:
+
+```text
+list1
+  |
+  v
+Node(2) -> Node(4) -> Node(6)
+```
+
+So:
+
+```python
+tail.next = list1
+```
+
+means:
+
+```text
+Connect tail to this already-existing node.
+```
+
+No new node needs to be created.
+
+---
+
+### Case 2 — We only have a value
+
+Example: **Add Two Numbers**
+
+Suppose:
+
+```python
+digit = 7
+```
+
+`digit` is just an integer.
+
+This is wrong:
+
+```python
+tail.next = digit
+```
+
+because `.next` must point to a `ListNode`, not an integer.
+
+So we create a new node:
+
+```python
+tail.next = ListNode(digit)
+tail = tail.next
+```
+
+`ListNode(digit)` creates:
+
+```text
+Node:
+val = digit
+next = None
+```
+
+Example:
+
+```python
+digit = 7
+tail.next = ListNode(7)
+```
+
+creates:
+
+```text
+tail -> Node(7) -> None
+```
+
+---
+
+### Quick Rule
+
+```text
+Already have a node?
+-> tail.next = existing_node
+
+Only have a value?
+-> tail.next = ListNode(value)
+```
+
+Examples:
+
+```python
+# Merge Two Sorted Lists
+tail.next = list1
+```
+
+because `list1` is already a node.
+
+```python
+# Add Two Numbers
+tail.next = ListNode(digit)
+```
+
+because `digit` is only an integer.
+
+---
+
+## Add Two Numbers — Pattern
+
+Main idea:
+
+```text
+Add both digits
++ carry
+↓
+Store result digit
+↓
+Update carry
+↓
+Create new result node
+```
+
+Core formulas:
+
+```python
+summ = val1 + val2 + carry
+
+digit = summ % 10
+carry = summ // 10
+```
+
+Then create the result node:
+
+```python
+tail.next = ListNode(digit)
+tail = tail.next
+```
+
+Full iterative pattern:
+
+```python
+dummy = ListNode()
+tail = dummy
+carry = 0
+
+while l1 or l2 or carry:
+
+    val1 = l1.val if l1 else 0
+    val2 = l2.val if l2 else 0
+
+    summ = val1 + val2 + carry
+
+    digit = summ % 10
+    carry = summ // 10
+
+    tail.next = ListNode(digit)
+    tail = tail.next
+
+    if l1:
+        l1 = l1.next
+
+    if l2:
+        l2 = l2.next
+
+return dummy.next
+```
+
+Pattern recall:
+
+```text
+Add Two Numbers
+-> Dummy + Tail + Carry
+```
 
 ---
 
