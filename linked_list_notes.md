@@ -740,7 +740,248 @@ return hash_map[head]
 
 ---
 
-# 14. ListNode() vs Node()
+# LRU Cache — HashMap + Doubly Linked List
+
+## Pattern
+
+```text
+HashMap + Doubly Linked List
+```
+
+Goal:
+
+```text
+get(key) -> O(1)
+put(key, value) -> O(1)
+```
+
+---
+
+## Core Structure
+
+```text
+head <-> LRU ... MRU <-> tail
+```
+
+In our version:
+
+```text
+head.next = least recently used
+tail.prev = most recently used
+```
+
+`head` and `tail` are dummy nodes.
+
+```python
+self.head = ListNode(0, 0)
+self.tail = ListNode(0, 0)
+
+self.head.next = self.tail
+self.tail.prev = self.head
+```
+
+---
+
+## HashMap
+
+```python
+self.cache = {}
+```
+
+Stores:
+
+```text
+key -> node
+```
+
+Example:
+
+```text
+1 -> Node(key=1, value=10)
+2 -> Node(key=2, value=20)
+```
+
+This gives O(1) lookup.
+
+---
+
+## Remove a Node
+
+```python
+def remove(self, node):
+    node.prev.next = node.next
+    node.next.prev = node.prev
+```
+
+Example:
+
+```text
+A <-> B <-> C
+```
+
+Remove `B`:
+
+```text
+A <-> C
+```
+
+---
+
+## Add Node as Most Recent
+
+```python
+def add(self, node):
+    prev_node = self.tail.prev
+
+    prev_node.next = node
+    node.prev = prev_node
+
+    node.next = self.tail
+    self.tail.prev = node
+```
+
+This inserts the node just before `tail`.
+
+```text
+... <-> old MRU <-> new node <-> tail
+```
+
+---
+
+## get()
+
+```python
+def get(self, key):
+    if key not in self.cache:
+        return -1
+
+    node = self.cache[key]
+
+    self.remove(node)
+    self.add(node)
+
+    return node.value
+```
+
+Pattern:
+
+```text
+Find node
+-> remove from old position
+-> move to MRU position
+-> return value
+```
+
+---
+
+## put()
+
+```python
+def put(self, key, value):
+    if key in self.cache:
+        self.remove(self.cache[key])
+
+    node = ListNode(key, value)
+    self.cache[key] = node
+    self.add(node)
+
+    if len(self.cache) > self.cap:
+        lru = self.head.next
+        self.remove(lru)
+        del self.cache[lru.key]
+```
+
+Pattern:
+
+```text
+If key exists
+-> remove old node
+
+Create/update node
+-> add as MRU
+
+If over capacity
+-> remove head.next
+```
+
+---
+
+## Why Doubly Linked List?
+
+We need:
+
+```text
+node.prev
+node.next
+```
+
+so we can remove any node in O(1).
+
+With only a singly linked list, finding the previous node could take O(n).
+
+---
+
+## `self.` Rule
+
+Use:
+
+```python
+self.cache
+self.head
+self.tail
+self.cap
+```
+
+because these belong to the whole `LRUCache` object.
+
+Use:
+
+```python
+node
+prev_node
+lru
+```
+
+without `self.` because these are temporary local variables inside a method.
+
+---
+
+## Quick Recall
+
+```text
+HashMap
+-> key -> node
+
+head.next
+-> LRU
+
+tail.prev
+-> MRU
+
+get
+-> lookup + move to MRU
+
+put
+-> add/update + evict LRU if needed
+
+remove(node)
+-> reconnect prev and next
+
+add(node)
+-> insert before tail
+```
+
+## Complexity
+
+```text
+get: O(1)
+put: O(1)
+Space: O(capacity)
+```
+---
+
+
+# 15. ListNode() vs Node()
 
 Normal linked list:
 
@@ -784,7 +1025,7 @@ random = None
 
 ---
 
-# 15. Pointer Assignment vs Rewiring
+# 16. Pointer Assignment vs Rewiring
 
 This:
 
@@ -814,7 +1055,7 @@ cur.next = ...   -> modify linked list
 
 ---
 
-# 16. Basic Node Deletion
+# 17. Basic Node Deletion
 
 Suppose:
 
@@ -836,7 +1077,7 @@ prev -> next
 
 ---
 
-# 17. Why We Save `next`
+# 18. Why We Save `next`
 
 Wrong:
 
@@ -864,7 +1105,7 @@ cur = nxt
 
 ---
 
-# 18. Common Dummy Mistake
+# 19. Common Dummy Mistake
 
 This:
 
@@ -894,7 +1135,7 @@ dummy -> head -> ...
 
 ---
 
-# 19. Why `dummy.next` Returns the Whole List
+# 20. Why `dummy.next` Returns the Whole List
 
 Suppose:
 
@@ -928,7 +1169,7 @@ returns the entry point to:
 
 ---
 
-# 20. Problems Covered So Far
+# 21. Problems Covered So Far
 
 ## Reverse Linked List
 
@@ -978,7 +1219,7 @@ Rewire .next
 
 ---
 
-# 21. One-Line Pattern Recall
+# 22. One-Line Pattern Recall
 
 ```text
 Traverse list
@@ -1014,7 +1255,7 @@ Return real head after dummy
 
 ---
 
-# 22. Core Python Templates To Memorize
+# 23. Core Python Templates To Memorize
 
 ## Traversal
 
