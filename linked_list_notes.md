@@ -1,1383 +1,210 @@
-# Linked List Patterns — Python Revision Notes
+# Merge K Sorted Lists — Divide and Conquer
 
-## 1. Core Node Idea
+## Main Idea
 
-A normal singly linked-list node has:
+We already know how to merge **two sorted linked lists**.
 
-```python
-node.val
-node.next
-```
-
-For random-pointer problems:
-
-```python
-node.val
-node.next
-node.random
-```
-
-Important:
+For `k` lists, instead of merging them one-by-one:
 
 ```text
-.next points to the next NODE, not just the next value.
+L1 + L2
+result + L3
+result + L4
+...
 ```
 
-Example:
+merge them in pairs:
 
 ```text
-1 -> 2 -> 3
-```
+[L1, L2, L3, L4]
 
-`head.next` points to node `2`, and from node `2` you can still access:
+Round 1:
+L1 + L2 -> A
+L3 + L4 -> B
 
-```text
-2 -> 3
-```
+[A, B]
 
----
-
-# 2. Basic Traversal
-
-```python
-cur = head
-
-while cur:
-    # process cur
-    cur = cur.next
-```
-
-Mental model:
-
-```text
-cur = node currently being processed
-```
-
-Usually keep `head` unchanged and traverse with `cur`.
-
----
-
-# 3. Dummy Node Pattern
-
-Dummy nodes have two main uses.
-
-## Case A — Building a New List
-
-Example: Merge Two Sorted Lists
-
-```python
-dummy = ListNode()
-tail = dummy
-```
-
-Initially:
-
-```text
-dummy
-  |
-  v
-0 -> None
-```
-
-The dummy is not connected to an existing list yet.
-
-As the result is built:
-
-```text
-dummy -> 1 -> 2 -> 3
-                    ^
-                   tail
+Round 2:
+A + B -> Final
 ```
 
 Pattern:
 
-```python
-tail.next = some_node
-tail = tail.next
-```
-
-Return:
-
-```python
-return dummy.next
-```
-
-because the dummy node itself is fake.
-
-Use this for:
-
 ```text
-Building a result list
-Merging lists
-Creating a list incrementally
+Merge lists in pairs
+-> replace old lists with merged results
+-> repeat until only one list remains
 ```
 
 ---
 
-## Case B — Fake Node Before Existing Head
+## Why `lists = merged`?
 
-Example: Remove Nth Node From End
-
-```python
-dummy = ListNode(0, head)
-```
-
-This means:
-
-```python
-dummy.val = 0
-dummy.next = head
-```
-
-So:
-
-```text
-dummy -> 1 -> 2 -> 3
-```
-
-This is useful when the original head might be deleted.
-
-Return:
-
-```python
-return dummy.next
-```
-
-because the head may have changed.
-
-### Quick Recall
-
-```text
-ListNode()          -> dummy starts disconnected
-
-ListNode(0, head)   -> dummy is placed before head
-```
-
----
-
-# 4. Dummy + Tail Pattern
-
-Used when building a list.
-
-```python
-dummy = ListNode()
-tail = dummy
-
-while ...:
-    tail.next = node
-    tail = tail.next
-
-return dummy.next
-```
-
-Roles:
-
-```text
-dummy = permanently remembers the start
-tail  = moves as the result list grows
-```
-## Dummy + Tail: Existing Node vs New Node
-
-This distinction is important.
-
-### Case 1 — We already have a node
-
-Example: **Merge Two Sorted Lists**
-
-```python
-tail.next = list1
-tail = tail.next
-```
-
-Here, `list1` is already a `ListNode`.
+`merged` contains the results of the **current round**.
 
 Example:
 
 ```text
-list1
-  |
-  v
-Node(2) -> Node(4) -> Node(6)
+lists = [L1, L2, L3, L4]
+```
+
+After one round:
+
+```text
+merged = [merge(L1, L2), merge(L3, L4)]
 ```
 
 So:
 
 ```python
-tail.next = list1
+lists = merged
 ```
 
-means:
+makes the next round operate on:
 
 ```text
-Connect tail to this already-existing node.
+[A, B]
 ```
 
-No new node needs to be created.
+Then:
+
+```text
+merged = [merge(A, B)]
+```
+
+Eventually:
+
+```text
+lists = [Final]
+```
+
+so:
+
+```python
+return lists[0]
+```
+
+returns the fully merged list.
 
 ---
 
-### Case 2 — We only have a value
-
-Example: **Add Two Numbers**
-
-Suppose:
+## Divide-and-Conquer Code
 
 ```python
-digit = 7
+def mergeKLists(self, lists):
+    if not lists:
+        return None
+
+    while len(lists) > 1:
+        merged = []
+
+        for i in range(0, len(lists), 2):
+            l1 = lists[i]
+
+            if i + 1 < len(lists):
+                l2 = lists[i + 1]
+            else:
+                l2 = None
+
+            merged.append(self.merge(l1, l2))
+
+        lists = merged
+
+    return lists[0]
 ```
 
-`digit` is just an integer.
-
-This is wrong:
+The helper is the same **Merge Two Sorted Lists** pattern:
 
 ```python
-tail.next = digit
-```
+def merge(self, l1, l2):
+    dummy = ListNode()
+    tail = dummy
 
-because `.next` must point to a `ListNode`, not an integer.
+    while l1 and l2:
+        if l1.val < l2.val:
+            tail.next = l1
+            l1 = l1.next
+        else:
+            tail.next = l2
+            l2 = l2.next
 
-So we create a new node:
-
-```python
-tail.next = ListNode(digit)
-tail = tail.next
-```
-
-`ListNode(digit)` creates:
-
-```text
-Node:
-val = digit
-next = None
-```
-
-Example:
-
-```python
-digit = 7
-tail.next = ListNode(7)
-```
-
-creates:
-
-```text
-tail -> Node(7) -> None
-```
-
----
-
-### Quick Rule
-
-```text
-Already have a node?
--> tail.next = existing_node
-
-Only have a value?
--> tail.next = ListNode(value)
-```
-
-Examples:
-
-```python
-# Merge Two Sorted Lists
-tail.next = list1
-```
-
-because `list1` is already a node.
-
-```python
-# Add Two Numbers
-tail.next = ListNode(digit)
-```
-
-because `digit` is only an integer.
-
----
-
-## Add Two Numbers — Pattern
-
-Main idea:
-
-```text
-Add both digits
-+ carry
-↓
-Store result digit
-↓
-Update carry
-↓
-Create new result node
-```
-
-Core formulas:
-
-```python
-summ = val1 + val2 + carry
-
-digit = summ % 10
-carry = summ // 10
-```
-
-Then create the result node:
-
-```python
-tail.next = ListNode(digit)
-tail = tail.next
-```
-
-Full iterative pattern:
-
-```python
-dummy = ListNode()
-tail = dummy
-carry = 0
-
-while l1 or l2 or carry:
-
-    val1 = l1.val if l1 else 0
-    val2 = l2.val if l2 else 0
-
-    summ = val1 + val2 + carry
-
-    digit = summ % 10
-    carry = summ // 10
-
-    tail.next = ListNode(digit)
-    tail = tail.next
+        tail = tail.next
 
     if l1:
-        l1 = l1.next
+        tail.next = l1
+    elif l2:
+        tail.next = l2
 
-    if l2:
-        l2 = l2.next
-
-return dummy.next
-```
-
-Pattern recall:
-
-```text
-Add Two Numbers
--> Dummy + Tail + Carry
+    return dummy.next
 ```
 
 ---
 
-# 5. Reverse Linked List — Iterative
+## Sequential vs Divide and Conquer
 
-Very important template:
-
-```python
-prev = None
-cur = head
-
-while cur:
-    nxt = cur.next
-    cur.next = prev
-    prev = cur
-    cur = nxt
-
-return prev
-```
-
-Memorize as:
+### Sequential
 
 ```text
-save next
-reverse link
-move prev
-move cur
+L1 + L2
+result + L3
+result + L4
+...
 ```
 
-Example:
+The merged list keeps getting larger every time.
+
+### Divide and Conquer
 
 ```text
-1 -> 2 -> 3
-
-becomes
-
-3 -> 2 -> 1
+Round 1: merge small lists
+Round 2: merge medium lists
+Round 3: merge larger lists
 ```
 
-Important:
+Number of rounds:
 
-```python
-nxt = cur.next
+```text
+log(k)
 ```
 
-must happen before:
-
-```python
-cur.next = prev
-```
-
-otherwise you lose the remaining list.
+where `k` is the number of linked lists.
 
 ---
 
-# 6. Reverse Linked List — Recursive
+## Complexity
 
-Core pattern:
-
-```python
-newHead = self.reverseList(head.next)
-
-head.next.next = head
-head.next = None
-
-return newHead
-```
-
-Mental model:
+Let:
 
 ```text
-Reverse everything after me first.
-Then attach me at the end.
-```
-
-Example:
-
-```text
-2 -> 3
-```
-
-This:
-
-```python
-head.next.next = head
-```
-
-creates:
-
-```text
-3 -> 2
+N = total number of nodes
+k = number of lists
 ```
 
 Then:
 
-```python
-head.next = None
-```
-
-breaks the original forward connection.
-
----
-
-# 7. Fast + Slow Pointer Pattern
-
-```python
-slow = head
-fast = head
-
-while fast and fast.next:
-    slow = slow.next
-    fast = fast.next.next
-```
-
-Meaning:
-
 ```text
-slow moves 1 step
-fast moves 2 steps
+Time: O(N log k)
 ```
 
-Common uses:
-
-```text
-Find middle
-Split list
-Detect cycle
-Reorder list
-Palindrome list
-```
-
----
-
-# 8. Find Middle / Split List
-
-Example:
-
-```python
-slow, fast = head, head.next
-
-while fast and fast.next:
-    slow = slow.next
-    fast = fast.next.next
-```
-
-After this:
-
-```text
-slow = end of first half
-slow.next = start of second half
-```
-
-To split:
-
-```python
-second = slow.next
-slow.next = None
-```
-
-Now the two halves are disconnected.
-
----
-
-# 9. Reorder List
-
-Pattern:
-
-```text
-1. Find middle
-2. Reverse second half
-3. Merge both halves alternately
-```
-
-```python
-# Find middle
-slow, fast = head, head.next
-
-while fast and fast.next:
-    slow = slow.next
-    fast = fast.next.next
-
-# Reverse second half
-second = slow.next
-slow.next = None
-
-prev = None
-
-while second:
-    nxt = second.next
-    second.next = prev
-    prev = second
-    second = nxt
-
-# Merge both halves
-first, second = head, prev
-
-while second:
-    nxt1 = first.next
-    nxt2 = second.next
-
-    first.next = second
-    second.next = nxt1
-
-    first = nxt1
-    second = nxt2
-```
-
-Recall:
-
-```text
-Middle + Reverse + Merge
-```
-
----
-
-# 10. Remove Nth Node From End
-
-Pattern:
-
-```text
-Dummy + fixed gap between fast and slow
-```
-
-```python
-dummy = ListNode(0, head)
-
-slow = dummy
-fast = head
-
-while n > 0:
-    fast = fast.next
-    n -= 1
-
-while fast:
-    slow = slow.next
-    fast = fast.next
-
-slow.next = slow.next.next
-
-return dummy.next
-```
-
-Mental model:
-
-```text
-Move fast n steps ahead
-Move fast and slow together
-When fast ends, slow is before target
-Delete slow.next
-```
-
-Deletion:
-
-```python
-slow.next = slow.next.next
-```
-
----
-
-# 11. Remove Nth Node From Beginning
-
-If `n` is 1-based:
-
-```python
-if n == 1:
-    return head.next
-
-cur = head
-count = 1
-
-while cur and count < n - 1:
-    cur = cur.next
-    count += 1
-
-cur.next = cur.next.next
-
-return head
-```
-
-General rule:
-
-```text
-To delete a node, stand at the node BEFORE it.
-```
-
-Then:
-
-```python
-prev.next = prev.next.next
-```
-
----
-
-# 12. Merge Two Sorted Lists
-
-```python
-dummy = ListNode()
-tail = dummy
-
-while list1 and list2:
-    if list1.val < list2.val:
-        tail.next = list1
-        list1 = list1.next
-    else:
-        tail.next = list2
-        list2 = list2.next
-
-    tail = tail.next
-
-if list1:
-    tail.next = list1
-elif list2:
-    tail.next = list2
-
-return dummy.next
-```
-
-Mental model:
-
-```text
-Compare heads
-Attach smaller node
-Move that source pointer
-Move tail
-```
-
----
-
-# 13. Copy List With Random Pointer
-
-Main pattern:
-
-```text
-Pass 1 = create copied nodes
-Pass 2 = connect copied nodes
-```
-
-Initialize:
-
-```python
-hash_map = {None: None}
-```
-
-### First Pass
-
-```python
-cur = head
-
-while cur:
-    hash_map[cur] = Node(cur.val)
-    cur = cur.next
-```
-
-Mapping becomes:
-
-```text
-old A -> new A
-old B -> new B
-old C -> new C
-```
-
-### Second Pass
-
-```python
-cur = head
-
-while cur:
-    hash_map[cur].next = hash_map[cur.next]
-    hash_map[cur].random = hash_map[cur.random]
-    cur = cur.next
-```
-
-Return:
-
-```python
-return hash_map[head]
-```
-
----
-
-# LRU Cache — HashMap + Doubly Linked List
-
-## Pattern
-
-```text
-HashMap + Doubly Linked List
-```
-
-Goal:
-
-```text
-get(key) -> O(1)
-put(key, value) -> O(1)
-```
-
----
-
-## Core Structure
-
-```text
-head <-> LRU ... MRU <-> tail
-```
-
-In our version:
-
-```text
-head.next = least recently used
-tail.prev = most recently used
-```
-
-`head` and `tail` are dummy nodes.
-
-```python
-self.head = ListNode(0, 0)
-self.tail = ListNode(0, 0)
-
-self.head.next = self.tail
-self.tail.prev = self.head
-```
-
----
-
-## HashMap
-
-```python
-self.cache = {}
-```
-
-Stores:
-
-```text
-key -> node
-```
-
-Example:
-
-```text
-1 -> Node(key=1, value=10)
-2 -> Node(key=2, value=20)
-```
-
-This gives O(1) lookup.
-
----
-
-## Remove a Node
-
-```python
-def remove(self, node):
-    node.prev.next = node.next
-    node.next.prev = node.prev
-```
-
-Example:
-
-```text
-A <-> B <-> C
-```
-
-Remove `B`:
-
-```text
-A <-> C
-```
-
----
-
-## Add Node as Most Recent
-
-```python
-def add(self, node):
-    prev_node = self.tail.prev
-
-    prev_node.next = node
-    node.prev = prev_node
-
-    node.next = self.tail
-    self.tail.prev = node
-```
-
-This inserts the node just before `tail`.
-
-```text
-... <-> old MRU <-> new node <-> tail
-```
-
----
-
-## get()
-
-```python
-def get(self, key):
-    if key not in self.cache:
-        return -1
-
-    node = self.cache[key]
-
-    self.remove(node)
-    self.add(node)
-
-    return node.value
-```
-
-Pattern:
-
-```text
-Find node
--> remove from old position
--> move to MRU position
--> return value
-```
-
----
-
-## put()
-
-```python
-def put(self, key, value):
-    if key in self.cache:
-        self.remove(self.cache[key])
-
-    node = ListNode(key, value)
-    self.cache[key] = node
-    self.add(node)
-
-    if len(self.cache) > self.cap:
-        lru = self.head.next
-        self.remove(lru)
-        del self.cache[lru.key]
-```
-
-Pattern:
-
-```text
-If key exists
--> remove old node
-
-Create/update node
--> add as MRU
-
-If over capacity
--> remove head.next
-```
-
----
-
-## Why Doubly Linked List?
-
-We need:
-
-```text
-node.prev
-node.next
-```
-
-so we can remove any node in O(1).
-
-With only a singly linked list, finding the previous node could take O(n).
-
----
-
-## `self.` Rule
-
-Use:
-
-```python
-self.cache
-self.head
-self.tail
-self.cap
-```
-
-because these belong to the whole `LRUCache` object.
-
-Use:
-
-```python
-node
-prev_node
-lru
-```
-
-without `self.` because these are temporary local variables inside a method.
+because every node participates in about `log(k)` merge rounds.
 
 ---
 
 ## Quick Recall
 
 ```text
-HashMap
--> key -> node
+Merge K Sorted Lists
+-> Merge Two Sorted Lists repeatedly in pairs
 
-head.next
--> LRU
+Pair adjacent lists
+-> store results in merged
 
-tail.prev
--> MRU
+lists = merged
+-> use current round as input to next round
 
-get
--> lookup + move to MRU
+Stop when
+-> len(lists) == 1
 
-put
--> add/update + evict LRU if needed
-
-remove(node)
--> reconnect prev and next
-
-add(node)
--> insert before tail
-```
-
-## Complexity
-
-```text
-get: O(1)
-put: O(1)
-Space: O(capacity)
-```
----
-
-
-# 15. ListNode() vs Node()
-
-Normal linked list:
-
-```python
-ListNode(val, next)
-```
-
-Example:
-
-```python
-ListNode(0, head)
-```
-
-creates:
-
-```text
-new node:
-val = 0
-next = head
-```
-
-Random-pointer problem:
-
-```python
-Node(val, next, random)
-```
-
-Example:
-
-```python
-Node(cur.val)
-```
-
-creates a new independent node with:
-
-```text
-same value
-next = None
-random = None
-```
-
----
-
-# 16. Pointer Assignment vs Rewiring
-
-This:
-
-```python
-cur = cur.next
-```
-
-only moves the variable `cur`.
-
-It does NOT modify the list.
-
-This:
-
-```python
-cur.next = prev
-```
-
-changes the actual linked-list connection.
-
-So remember:
-
-```text
-cur = ...        -> move pointer variable
-
-cur.next = ...   -> modify linked list
-```
-
----
-
-# 17. Basic Node Deletion
-
-Suppose:
-
-```text
-prev -> curr -> next
-```
-
-Delete `curr`:
-
-```python
-prev.next = curr.next
-```
-
-The chain becomes:
-
-```text
-prev -> next
-```
-
----
-
-# 18. Why We Save `next`
-
-Wrong:
-
-```python
-cur.next = prev
-cur = cur.next
-```
-
-After reversing:
-
-```python
-cur.next = prev
-```
-
-`cur.next` no longer points forward.
-
-Correct:
-
-```python
-nxt = cur.next
-cur.next = prev
-prev = cur
-cur = nxt
-```
-
----
-
-# 19. Common Dummy Mistake
-
-This:
-
-```python
-dummy = ListNode(0, None)
-```
-
-creates:
-
-```text
-dummy -> None
-```
-
-It is NOT connected to the existing list.
-
-For deletion problems where dummy should sit before head:
-
-```python
-dummy = ListNode(0, head)
-```
-
-creates:
-
-```text
-dummy -> head -> ...
-```
-
----
-
-# 20. Why `dummy.next` Returns the Whole List
-
-Suppose:
-
-```text
-dummy -> 1 -> 2 -> 3
-```
-
-Then:
-
-```python
-dummy.next
-```
-
-points to node `1`.
-
-Node `1` itself points to node `2`, which points to node `3`.
-
-Therefore returning:
-
-```python
-return dummy.next
-```
-
-returns the entry point to:
-
-```text
-1 -> 2 -> 3
-```
-
-`.next` gives the next node, and that node gives access to the entire remaining chain.
-
----
-
-# 21. Problems Covered So Far
-
-## Reverse Linked List
-
-```text
-Pattern:
-Reverse pointers
-
-Main variables:
-prev, cur, nxt
-```
-
-## Merge Two Sorted Lists
-
-```text
-Pattern:
-Dummy + tail
-```
-
-## Reorder List
-
-```text
-Pattern:
-Middle + reverse second half + merge
-```
-
-## Remove Nth Node From End
-
-```text
-Pattern:
-Dummy + fixed fast/slow gap
-```
-
-## Copy List With Random Pointer
-
-```text
-Pattern:
-HashMap old node -> copied node
-```
-
-## Basic Node Deletion
-
-```text
-Pattern:
-Move to node before target
-Rewire .next
-```
-
----
-
-# 22. One-Line Pattern Recall
-
-```text
-Traverse list
--> cur = cur.next
-
-Build new list
--> dummy + tail
-
-Head may change/delete
--> dummy = ListNode(0, head)
-
-Reverse list
--> prev, cur, nxt
-
-Find middle
--> slow + fast
-
-Reorder list
--> middle + reverse second half + merge
-
-Nth from end
--> fixed fast/slow gap
-
-Delete node
--> prev.next = prev.next.next
-
-Copy random list
--> hashmap old node -> copied node
-
-Return real head after dummy
--> dummy.next
-```
-
----
-
-# 23. Core Python Templates To Memorize
-
-## Traversal
-
-```python
-cur = head
-
-while cur:
-    cur = cur.next
-```
-
-## Reverse
-
-```python
-prev = None
-cur = head
-
-while cur:
-    nxt = cur.next
-    cur.next = prev
-    prev = cur
-    cur = nxt
-```
-
-## Fast / Slow
-
-```python
-slow = head
-fast = head
-
-while fast and fast.next:
-    slow = slow.next
-    fast = fast.next.next
-```
-
-## Dummy + Tail
-
-```python
-dummy = ListNode()
-tail = dummy
-
-while ...:
-    tail.next = node
-    tail = tail.next
-
-return dummy.next
-```
-
-## Dummy Before Head
-
-```python
-dummy = ListNode(0, head)
-```
-
-## Delete Next Node
-
-```python
-cur.next = cur.next.next
-```
-
-## Fixed Gap
-
-```python
-slow = dummy
-fast = head
-
-for _ in range(n):
-    fast = fast.next
-
-while fast:
-    slow = slow.next
-    fast = fast.next
-```
-
----
-
-# Final Mental Map
-
-```text
-HEAD MAY CHANGE?
-    |
-   Yes
-    |
-  Dummy
-
-BUILDING A RESULT LIST?
-    |
-   Yes
-    |
-Dummy + Tail
-
-NEED MIDDLE?
-    |
-   Yes
-    |
-Slow + Fast
-
-NEED REVERSE?
-    |
-   Yes
-    |
-prev + cur + nxt
-
-NTH FROM END?
-    |
-   Yes
-    |
-Fast/Slow Fixed Gap
-
-COPY RANDOM POINTERS?
-    |
-   Yes
-    |
-HashMap:
-Old Node -> New Node
-
-REORDER?
-    |
-   Yes
-    |
-Middle
-  ↓
-Reverse Second Half
-  ↓
-Merge
+Return
+-> lists[0]
 ```
