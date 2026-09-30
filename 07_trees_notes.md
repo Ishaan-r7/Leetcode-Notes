@@ -142,6 +142,25 @@ def maxPathSum(self, root):
 ```
 Recall: same `self.res` trick as Diameter. You're allowed to use BOTH children to update the global max (a path can bend once, at the peak), but you can only RETURN one side to the parent — a path can't branch twice.
 
+## Distribute Coins in Binary Tree (extra, not in the 150)
+```python
+def distributeCoins(self, root):
+    res = 0
+    def dfs(node):
+        nonlocal res
+        if not node:
+            return [0, 0]
+        l_size, l_coins = dfs(node.left)
+        r_size, r_coins = dfs(node.right)
+        size = 1 + l_size + r_size
+        coins = node.val + l_coins + r_coins
+        res += abs(size - coins)     # this subtree's imbalance = moves crossing its parent edge
+        return [size, coins]
+    dfs(root)
+    return res
+```
+Recall: return BOTH size and coin-count per subtree (like Balanced Tree's `[status, height]` pair). `abs(size - coins)` at a node = coins that must cross the edge to its parent. Root's own imbalance is always 0 (total coins = total nodes), so including it in the sum is harmless — no need to special-case it.
+
 ---
 
 # 3. `self.x` vs `nonlocal` vs return value
