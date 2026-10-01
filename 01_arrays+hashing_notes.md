@@ -93,3 +93,80 @@ Top K frequent              -> Counter.most_common(k), or bucket sort by frequen
 Prefix/suffix product      -> two passes, multiply running product in from both sides
 Longest run in unsorted    -> set() + only start counting from run STARTS (n-1 not in set)
 ```
+
+---
+
+# Python Syntax Cheatsheet
+
+## Sorting a dict by its values
+```python
+d = {'a': 3, 'b': 1, 'c': 2}
+
+sorted(d, key=d.get)                      # ['b', 'c', 'a']  -- sorted KEYS, ordered by their value
+sorted(d.items(), key=lambda x: x[1])     # [('b',1), ('c',2), ('a',3)]  -- (key, value) pairs
+sorted(d, key=d.get, reverse=True)        # descending by value
+```
+Recall: `key=d.get` means "for each key, sort using `d[key]` instead of the key itself." `d.items()` version if you need both key AND value in the result, not just the key.
+
+## Sorting a list of tuples/lists by a specific field
+```python
+pairs = [(3,'c'), (1,'a'), (2,'b')]
+sorted(pairs)                   # sorts by first element by default: [(1,'a'),(2,'b'),(3,'c')]
+sorted(pairs, key=lambda x: x[1])   # sort by second element instead
+sorted(pairs, key=lambda x: -x[0])   # descending, without reverse=True (useful with multi-key sorts)
+```
+
+## Sorting by multiple keys
+```python
+sorted(people, key=lambda p: (p.age, p.name))   # age first, name as tiebreaker
+sorted(people, key=lambda p: (-p.age, p.name))  # age descending, name ascending -- mixed directions
+```
+
+## Counter — common operations
+```python
+c = Counter(['a','b','a','c','a'])
+c['a']                 # 3
+c['z']                 # 0  -- missing key doesn't KeyError, just returns 0 (unlike a plain dict)
+c.most_common(2)        # [('a',3), ('b',1)]  -- top k by frequency, already sorted
+c.most_common()          # ALL elements, sorted by frequency descending
+c1 - c2                  # subtract counts (keeps only positive results)
+c1 + c2                  # add counts together
+```
+
+## defaultdict — avoids manual key-existence checks
+```python
+d = defaultdict(list)
+d['x'].append(1)        # no KeyError even though 'x' was never set -- auto-creates []
+
+d = defaultdict(int)
+d['x'] += 1               # auto-creates 0 first, so this works immediately
+```
+
+## enumerate — index + value together
+```python
+for i, val in enumerate(nums):      # i = index, val = nums[i]
+    ...
+for i, val in enumerate(nums, start=1):   # start counting from 1 instead of 0
+    ...
+```
+
+## zip — pair up multiple lists
+```python
+for a, b in zip(list1, list2):      # stops at the SHORTER list's length
+    ...
+dict(zip(keys, values))              # build a dict directly from two parallel lists
+```
+
+## List/dict comprehension filters
+```python
+[x for x in nums if x > 0]                    # filter
+[x*2 for x in nums]                           # transform
+{k: v for k, v in d.items() if v > 1}          # filter a dict
+{x for x in nums}                              # set comprehension
+```
+
+## `sorted()` vs `.sort()`
+```python
+sorted(nums)     # returns a NEW list, original untouched
+nums.sort()        # sorts IN PLACE, returns None -- don't do `nums = nums.sort()`
+```
