@@ -24,6 +24,11 @@ def maxProfit(self, prices):
 ```
 Recall: `l` = best buy day so far. If price drops below it, jump `l` to that new low — no need to track it separately.
 
+```text
+Time:  O(n) -- single pass, r scans every price once, O(1) work per index
+Space: O(1) -- only l, r, and maxP are tracked
+```
+
 ## Longest Substring Without Repeating Characters
 ```python
 def lengthOfLongestSubstring(self, s):
@@ -39,6 +44,12 @@ def lengthOfLongestSubstring(self, s):
     return res
 ```
 Recall: `while` (not `if`) to shrink — duplicate might require removing several chars from the left before it's gone.
+
+```text
+Time:  O(n) -- r only ever moves forward, and l only ever moves forward too (never resets),
+       so even with the nested while, total combined pointer movement is bounded by 2n
+Space: O(min(n, charset)) -- seen holds at most one entry per distinct character in the window
+```
 
 ## Longest Repeating Character Replacement
 ```python
@@ -58,6 +69,12 @@ def characterReplacement(self, s, k):
 ```
 Recall: window is valid if `(window size - count of most frequent char) <= k` — that gap is exactly how many chars you'd need to replace. `maxFreq` doesn't need correcting on shrink; it never causes a wrong answer here, only a delayed one.
 
+```text
+Time:  O(n) -- r scans once; l only ever moves forward (at most one shrink step per r),
+       so total work across the whole run is bounded by n
+Space: O(1) -- count dict is capped at alphabet size (26 letters), not n
+```
+
 ## Permutation in String
 ```python
 def checkInclusion(self, s1, s2):
@@ -76,6 +93,12 @@ def checkInclusion(self, s1, s2):
     return False
 ```
 Recall: FIXED window size = `len(s1)`. Slide it across `s2`, compare frequency maps.
+
+```text
+Time:  O(n * 26) = O(n) -- r scans s2 once; window==need compares two Counters, which is
+       bounded by alphabet size (26) rather than window length
+Space: O(1) -- both Counters are capped at 26 keys
+```
 
 ## Minimum Window Substring
 ```python
@@ -105,6 +128,12 @@ def minWindow(self, s, t):
 ```
 Recall: `have == needCount` means the window currently satisfies every required character count — shrink greedily from the left while it stays valid, recording the smallest valid window found.
 
+```text
+Time:  O(n) -- r scans s once; l only ever moves forward, so the inner while (shrink) loop's
+       total iterations across the whole run are bounded by n, not n per r-step
+Space: O(k) -- need/window hold at most k entries, k = number of distinct characters in t
+```
+
 ## Sliding Window Maximum
 ```python
 def maxSlidingWindow(self, nums, k):
@@ -123,6 +152,12 @@ def maxSlidingWindow(self, nums, k):
     return res
 ```
 Recall: monotonic decreasing deque — the max of the window is always at the front (`dq[0]`). Anything smaller than the newest value entering is useless and gets popped, since the new value will outlast it and is bigger.
+
+```text
+Time:  O(n) -- each index is pushed onto dq exactly once and popped at most once total
+       (from either end), so the nested while doesn't make this n^2 -- it's amortized O(1) per index
+Space: O(k) -- dq holds at most k indices at a time (the current window size)
+```
 
 ---
 

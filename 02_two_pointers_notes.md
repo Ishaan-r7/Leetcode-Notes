@@ -23,6 +23,12 @@ def isPalindrome(self, s):
 ```
 Recall: clean/normalize first, then converge pointers from both ends.
 
+```text
+Time:  O(n) -- building the cleaned list is O(n), then l and r converge toward each other
+       covering at most n more steps combined
+Space: O(n) -- the filtered/lowercased character list holds up to n elements
+```
+
 ## Two Sum II (sorted input)
 ```python
 def twoSum(self, numbers, target):
@@ -37,6 +43,11 @@ def twoSum(self, numbers, target):
             r -= 1          # need a smaller sum -> move right pointer down
 ```
 Recall: sorted array lets you REASON about direction — too small means increase `l`, too big means decrease `r`.
+
+```text
+Time:  O(n) -- l only moves right, r only moves left, so combined they take at most n steps total
+Space: O(1) -- only two index variables are needed, no extra structure
+```
 
 ## 3Sum
 ```python
@@ -62,6 +73,12 @@ def threeSum(self, nums):
 ```
 Recall: fix one number (`i`), two-pointer the rest. Sort first — enables both the direction logic AND easy duplicate-skipping.
 
+```text
+Time:  O(n^2) -- the sort is O(n log n), dominated by the outer loop over i (O(n)) each running
+       an O(n) two-pointer sweep on the remainder
+Space: O(n) -- ignoring the output, this is sort's space (or recursion depth) overhead
+```
+
 ## Container With Most Water
 ```python
 def maxArea(self, height):
@@ -77,6 +94,11 @@ def maxArea(self, height):
     return res
 ```
 Recall: always move the pointer at the SHORTER wall — moving the taller one can only shrink the area (width shrinks, height still capped by the short side).
+
+```text
+Time:  O(n) -- l and r converge toward each other, combined covering at most n steps
+Space: O(1) -- only the two pointers and a running max are tracked
+```
 
 ## Trapping Rain Water
 ```python
@@ -96,6 +118,11 @@ def trap(self, height):
     return res
 ```
 Recall: water trapped at a point = `min(leftMax, rightMax) - height[point]`. Move the pointer on the SMALLER max side — that side's bound is already known/fixed, so it's safe to resolve now.
+
+```text
+Time:  O(n) -- l and r converge inward, each step resolves water at exactly one position
+Space: O(1) -- leftMax/rightMax are tracked as running scalars instead of precomputed arrays
+```
 
 ---
 

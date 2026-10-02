@@ -17,6 +17,11 @@ def hasDuplicate(self, nums):
 ```
 Recall: set dedupes automatically — compare lengths instead of looping.
 
+```text
+Time:  O(n) -- building the set hashes each of the n elements once, each insert O(1) average
+Space: O(n) -- worst case (all unique) the set grows to hold every element
+```
+
 ## Two Sum
 ```python
 def twoSum(self, nums, target):
@@ -27,6 +32,11 @@ def twoSum(self, nums, target):
         seen[n] = i
 ```
 Recall: check for the COMPLEMENT before inserting current — avoids using the same element twice.
+
+```text
+Time:  O(n) -- single pass, dict lookup + insert are both O(1) average (amortized hashing cost)
+Space: O(n) -- seen grows by one entry per iteration until the match is found
+```
 
 ## Valid Anagram / Group Anagrams
 ```python
@@ -42,6 +52,12 @@ def groupAnagrams(self, strs):
 ```
 Recall: sorted string (or char-count signature) is the same for every anagram — use it as the hashmap key to bucket them.
 
+```text
+Time:  isAnagram O(L) via Counter build+compare (L = string length); groupAnagrams O(n * L log L)
+       -- n strings, each costs O(L log L) to sort into its bucket key
+Space: O(n * L) -- groups stores every string once, plus one key per group
+```
+
 ## Top K Frequent Elements
 ```python
 def topKFrequent(self, nums, k):
@@ -49,6 +65,12 @@ def topKFrequent(self, nums, k):
     return [val for val, _ in count.most_common(k)]
 ```
 Recall: `Counter.most_common(k)` — no need to hand-roll a heap unless asked to avoid built-ins. (Bucket sort by frequency is the O(n) manual approach if needed.)
+
+```text
+Time:  O(n log k) -- Counter build is O(n); most_common(k) uses a bounded heap of size k internally
+       (falls back toward O(n log n) only when k approaches n)
+Space: O(n) -- Counter holds up to n distinct values
+```
 
 ## Product of Array Except Self
 ```python
@@ -67,6 +89,11 @@ def productExceptSelf(self, nums):
 ```
 Recall: two passes — prefix product left→right, then multiply in postfix product right→left. No division needed (handles zeros safely).
 
+```text
+Time:  O(n) -- two linear passes over the array, O(1) work (one multiply) per index
+Space: O(1) extra -- res is the required output, not counted; only prefix/postfix scalars are extra
+```
+
 ## Longest Consecutive Sequence
 ```python
 def longestConsecutive(self, nums):
@@ -81,6 +108,12 @@ def longestConsecutive(self, nums):
     return longest
 ```
 Recall: the `n - 1 not in numSet` check is what keeps this O(n) instead of O(n²) — only starts a count from the beginning of each run, never the middle.
+
+```text
+Time:  O(n) -- each number is only ever "walked" by the while loop as part of ONE sequence
+       (the one it starts), so total inner-loop steps across all outer iterations sum to n
+Space: O(n) -- numSet stores every element
+```
 
 ---
 

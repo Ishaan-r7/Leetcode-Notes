@@ -26,6 +26,11 @@ def search(self, nums, target):
 ```
 Recall: `l <= r` (not `<`) since a single-element range is still valid to check. `mid = (l + r) // 2` — watch overflow in other languages, not an issue in Python.
 
+```text
+Time:  O(log n) -- the comparison at each mid discards half the remaining search space
+Space: O(1) -- only l, r, mid are tracked
+```
+
 ## Search a 2D Matrix
 ```python
 def searchMatrix(self, matrix, target):
@@ -45,6 +50,12 @@ def searchMatrix(self, matrix, target):
 ```
 Recall: treat the 2D grid as one flattened 1D array — `mid // cols` and `mid % cols` convert the flat index back to (row, col).
 
+```text
+Time:  O(log(rows * cols)) -- same halving as classic binary search, just over the flattened
+       index range instead of a real 1D array
+Space: O(1) -- only l, r, mid are tracked, no actual flattening happens
+```
+
 ## Koko Eating Bananas (binary search on the answer)
 ```python
 def minEatingSpeed(self, piles, h):
@@ -62,6 +73,12 @@ def minEatingSpeed(self, piles, h):
 ```
 Recall: not searching a given array — searching the RANGE of possible speeds `[1, max(piles)]`. "Can she finish in time at this speed?" is a yes/no check that flips exactly once as speed increases — that monotonic flip is what makes binary search valid here.
 
+```text
+Time:  O(n log m) -- binary search over the speed range [1, max(piles)] takes O(log m)
+       iterations (m = max pile size), and each iteration's feasibility check scans all n piles
+Space: O(1) -- only l, r, res are tracked
+```
+
 ## Find Minimum in Rotated Sorted Array
 ```python
 def findMin(self, nums):
@@ -75,6 +92,12 @@ def findMin(self, nums):
     return nums[l]
 ```
 Recall: compare `nums[mid]` to `nums[r]` (not `nums[l]`) — tells you which half contains the "break point" (rotation point), which is where the minimum lives.
+
+```text
+Time:  O(log n) -- each comparison against nums[r] still discards half the search space,
+       even though the array isn't fully sorted
+Space: O(1) -- only l, r, mid are tracked
+```
 
 ## Search in Rotated Sorted Array
 ```python
@@ -97,6 +120,12 @@ def search(self, nums, target):
     return -1
 ```
 Recall: one half is ALWAYS properly sorted (compare `nums[l]` vs `nums[mid]` to find which). Check if target falls inside that sorted half's range — if so search there, else search the other half.
+
+```text
+Time:  O(log n) -- one of the two halves is always properly sorted, so the "is target in
+       range" check lets you discard half the search space each iteration, same as classic search
+Space: O(1) -- only l, r, mid are tracked
+```
 
 ## Time Based Key-Value Store
 ```python
@@ -121,6 +150,12 @@ class TimeMap:
         return res
 ```
 Recall: timestamps are appended in increasing order, so the list is already sorted — binary search for the LARGEST timestamp `<= target`, not an exact match.
+
+```text
+Time:  set is O(1) amortized (list append); get is O(log m) -- binary search over the m
+       (timestamp, value) pairs stored for that key
+Space: O(n) total -- across all keys, every set call adds one stored pair
+```
 
 ## Median of Two Sorted Arrays
 ```python
@@ -150,6 +185,12 @@ def findMedianSortedArrays(self, nums1, nums2):
             l = i + 1
 ```
 Recall: binary search for a PARTITION point (not a value) such that everything to the left of the combined partition is ≤ everything to the right. Always search the shorter array to keep it O(log(min(m,n))).
+
+```text
+Time:  O(log(min(m, n))) -- binary search only runs over the shorter array's partition index
+       range, discarding half the candidate partitions each step
+Space: O(1) -- excluding input storage, only a handful of index/value variables are tracked
+```
 
 ---
 

@@ -43,12 +43,21 @@ def invertTree(self, root):
 ```
 Recall: swap the *recursive results*, not raw nodes.
 
+```text
+Time:  O(n) -- every node visited exactly once, O(1) work per node (one swap)
+Space: O(h) -- recursion stack depth equals tree height h (O(log n) balanced, O(n) worst-case skewed)
+```
+
 ## Max Depth
 ```python
 def maxDepth(self, root):
     if not root:
         return 0
     return 1 + max(self.maxDepth(root.left), self.maxDepth(root.right))
+```
+```text
+Time:  O(n) -- visits every node once to compute 1 + max(left, right)
+Space: O(h) -- recursion stack depth equals height h, same balanced/skewed split as Invert
 ```
 
 ## Diameter of Binary Tree
@@ -66,6 +75,11 @@ def diameterOfBinaryTree(self, root):
 ```
 Recall: `self.res` = running max across WHOLE tree; return value ≠ the answer itself.
 
+```text
+Time:  O(n) -- single DFS pass, each node does O(1) work combining its children's heights
+Space: O(h) -- recursion depth tracks height, not diameter (a bushy tree can have h << n)
+```
+
 ## Balanced Binary Tree
 ```python
 def isBalanced(self, root):
@@ -79,6 +93,12 @@ def isBalanced(self, root):
 ```
 Recall: return TWO pieces of info per node (status + height) when parent needs both.
 
+```text
+Time:  O(n) -- single bottom-up pass; bundling [status, height] together avoids the naive
+       O(n^2) version that recomputes height from scratch at every node
+Space: O(h) -- recursion stack proportional to height
+```
+
 ## Same Tree
 ```python
 def isSameTree(self, p, q):
@@ -87,6 +107,11 @@ def isSameTree(self, p, q):
     if not p or not q or p.val != q.val:
         return False
     return self.isSameTree(p.left, q.left) and self.isSameTree(p.right, q.right)
+```
+```text
+Time:  O(min(n_p, n_q)) -- recursion short-circuits the instant a mismatch is found,
+       otherwise visits every node of the smaller tree once
+Space: O(h) -- recursion depth bounded by the shallower tree's height
 ```
 
 ## Subtree of Another Tree
@@ -109,6 +134,12 @@ def isSubtree(self, root, subRoot):
 ```
 Bug to remember: define the helper BEFORE calling it (top-to-bottom execution).
 
+```text
+Time:  O(n * m) -- worst case, sameTree costs O(m) (m = size of subRoot) and can run once
+       at every one of root's n nodes, e.g. when many nodes happen to share subRoot's value
+Space: O(h) -- recursion stack depth, h = height of root
+```
+
 ## Count Good Nodes in Binary Tree
 ```python
 def goodNodes(self, root):
@@ -126,6 +157,11 @@ def goodNodes(self, root):
 ```
 Recall: "good along a PATH" -> pass running state DOWN as a parameter (each branch needs its own copy). Contrast with Diameter, where the state is shared globally (`self.res`) because it's one answer for the whole tree, not per-path.
 
+```text
+Time:  O(n) -- single DFS pass, each node does O(1) work (one comparison against maxVal)
+Space: O(h) -- recursion depth equals height; maxVal is passed by value, not accumulated per branch
+```
+
 ## Binary Tree Maximum Path Sum
 ```python
 def maxPathSum(self, root):
@@ -141,6 +177,11 @@ def maxPathSum(self, root):
     return self.res
 ```
 Recall: same `self.res` trick as Diameter. You're allowed to use BOTH children to update the global max (a path can bend once, at the peak), but you can only RETURN one side to the parent — a path can't branch twice.
+
+```text
+Time:  O(n) -- single DFS pass, each node does O(1) work combining its two children's gains
+Space: O(h) -- recursion stack depth equals height
+```
 
 ## Distribute Coins in Binary Tree (extra, not in the 150)
 ```python
@@ -160,6 +201,11 @@ def distributeCoins(self, root):
     return res
 ```
 Recall: return BOTH size and coin-count per subtree (like Balanced Tree's `[status, height]` pair). `abs(size - coins)` at a node = coins that must cross the edge to its parent. Root's own imbalance is always 0 (total coins = total nodes), so including it in the sum is harmless — no need to special-case it.
+
+```text
+Time:  O(n) -- single bottom-up pass, each node does O(1) work (one addition to res)
+Space: O(h) -- recursion stack depth equals height; the [size, coins] pair per call is O(1)
+```
 
 ---
 
@@ -191,6 +237,11 @@ def isValidBST(self, root):
 ```
 Recall: checking only vs immediate parent is NOT enough — a node must satisfy bounds set by EVERY ancestor. Thread `(low, high)` down, same "pass state as parameter" idea as Good Nodes.
 
+```text
+Time:  O(n) -- each node visited once, O(1) bound check per node
+Space: O(h) -- recursion depth equals height; (low, high) are passed by value, not stored
+```
+
 ## Lowest Common Ancestor (BST)
 ```python
 def lowestCommonAncestor(self, root, p, q):
@@ -205,6 +256,12 @@ def lowestCommonAncestor(self, root, p, q):
 ```
 Recall: needs `while True` loop. Return type is `TreeNode` — never return `.val`.
 
+```text
+Time:  O(h) -- NOT O(n): each step moves one level down toward p or q, so the walk is
+       bounded by height rather than total node count
+Space: O(1) -- iterative while loop, no recursion stack
+```
+
 ## Lowest Common Ancestor (general tree — extra, not in the 150)
 ```python
 def lowestCommonAncestor(self, root, p, q):
@@ -217,6 +274,11 @@ def lowestCommonAncestor(self, root, p, q):
     return left or right     # both on one side (or neither found) -> bubble up
 ```
 Recall: can't use value comparison without BST ordering — must search both sides.
+
+```text
+Time:  O(n) -- without BST ordering to guide the search, every node must potentially be visited once
+Space: O(h) -- recursion stack depth equals height
+```
 
 ## Kth Smallest Element in a BST
 ```python
@@ -232,6 +294,11 @@ def kthSmallest(self, root, k):
     return arr[k - 1]
 ```
 Recall: **in-order (L, node, R) on a BST always visits values in SORTED order.** That's the whole trick.
+
+```text
+Time:  O(n) -- in-order DFS visits every node once to build arr; doesn't stop early at k
+Space: O(n) -- arr stores every value; recursion stack adds O(h) on top
+```
 
 ## Construct Binary Tree from Preorder and Inorder Traversal
 ```python
@@ -251,6 +318,13 @@ preorder = [root, ...left..., ...right...]   -> preorder[0] is always the root
 inorder  = [...left..., root, ...right...]   -> find root's index -> splits left/right sizes
 ```
 Use the split point (`mid`) from inorder to slice preorder into matching left/right chunks. (Slicing is O(n) per call -> O(n²) total; can optimize with a val→index hashmap + pointers if needed, but this is the interview-baseline version.)
+
+```text
+Time:  O(n^2) worst case -- inorder.index() is O(n) per call and runs once per node (n calls),
+       and slicing preorder/inorder is also O(n) per call; a skewed tree makes both worse
+Space: O(n^2) -- repeated slicing allocates new lists at every recursion level
+       (the hashmap + pointer optimization brings both down to O(n))
+```
 
 ---
 
@@ -290,6 +364,12 @@ def levelOrder(self, root):
 ```
 Bug to remember: loop on `while queue:`, NOT `while root:` — `root` never changes, so looping on it never terminates.
 
+```text
+Time:  O(n) -- every node enqueued and dequeued exactly once, O(1) work per node
+Space: O(n) -- queue holds up to the widest level's worth of nodes (up to ~n/2 for a
+       complete tree); result also stores all n values
+```
+
 ## Binary Tree Right Side View
 ```python
 def rightSideView(self, root):
@@ -307,6 +387,11 @@ def rightSideView(self, root):
     return result
 ```
 Bug to remember: always append the CURRENT popped `node`'s children, never the outer `root`'s.
+
+```text
+Time:  O(n) -- same BFS traversal as level order, every node visited once
+Space: O(n) -- queue width bounded by the widest level; result stores one value per level
+```
 
 ## Serialize and Deserialize Binary Tree
 ```python
@@ -336,6 +421,12 @@ class Codec:
         return dfs()
 ```
 Recall: preorder (root, left, right) + explicit `'N'` markers for `None` = unambiguous to rebuild. `deserialize` walks the SAME order, consuming one token at a time via `iter`/`next`.
+
+```text
+Time:  O(n) -- serialize visits every node once; deserialize consumes each token once via next(vals)
+Space: O(n) -- the serialized string holds one entry per node plus one 'N' per null child;
+       recursion stack adds O(h) on top
+```
 
 ---
 

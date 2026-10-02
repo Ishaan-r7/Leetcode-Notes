@@ -174,6 +174,15 @@ Reverse everything after me first.
 Then attach me at the end.
 ```
 
+Complexity (applies to both iterative and recursive):
+
+```text
+Time:  O(n) -- single pass over all n nodes either way, each node's pointer flipped once
+Space: O(1) iterative -- only prev/cur/nxt pointers needed
+       O(n) recursive -- call stack depth equals list length, since each call waits for the
+       full chain to unwind before relinking head.next.next
+```
+
 ---
 
 # 4. Fast / Slow Pointer Patterns
@@ -228,6 +237,14 @@ fast stays n nodes ahead
 slow stops before target
 ```
 
+Complexity:
+
+```text
+Time:  O(n) -- fast advances n steps up front, then slow and fast move together through
+       the remaining (length - n) nodes; total steps bounded by the list length
+Space: O(1) -- only dummy, slow, fast pointers needed
+```
+
 ---
 
 # 5. Merge Two Sorted Lists
@@ -267,6 +284,14 @@ Compare heads
 Attach smaller
 Move source pointer
 Move tail
+```
+
+Complexity:
+
+```text
+Time:  O(n + m) -- every node from both list1 (n nodes) and list2 (m nodes) is visited
+       and attached exactly once
+Space: O(1) extra -- reuses existing nodes instead of allocating new ones, only dummy/tail needed
 ```
 
 ---
@@ -326,6 +351,14 @@ while l1 or l2 or carry:
 return dummy.next
 ```
 
+Complexity:
+
+```text
+Time:  O(max(n, m)) -- the loop runs once per digit position across both lists, extended
+       by at most one extra iteration if a final carry remains
+Space: O(max(n, m)) -- for the output list; O(1) extra beyond that since carry is a scalar
+```
+
 ---
 
 # 7. Reorder List
@@ -377,6 +410,14 @@ slow.next = None
 ```
 
 This separates both halves and prevents cycles.
+
+Complexity:
+
+```text
+Time:  O(n) -- three linear passes (find middle, reverse second half, merge alternately),
+       each bounded by n
+Space: O(1) -- reversal and merge happen in place on existing nodes, no extra data structure
+```
 
 ---
 
@@ -435,6 +476,14 @@ Recall:
 ```text
 Pass 1 = create nodes
 Pass 2 = recreate relationships
+```
+
+Complexity:
+
+```text
+Time:  O(n) -- two separate linear passes over the list: one to create all copies,
+       one to wire up next/random pointers via the hash_map lookups (O(1) each)
+Space: O(n) -- hash_map stores one entry per original node mapping it to its copy
 ```
 
 ---
@@ -571,6 +620,14 @@ put
 -> evict head.next if over capacity
 ```
 
+Complexity:
+
+```text
+Time:  O(1) per call -- get/put each do one dict lookup plus a fixed number of pointer
+       relinks (remove + add), never scanning the list
+Space: O(capacity) -- cache dict and doubly linked list both bounded by the cache's max size
+```
+
 `self.` rule:
 
 ```text
@@ -676,6 +733,19 @@ N = total nodes
 k = number of lists
 
 Time = O(N log k)
+```
+
+How this bound is derived:
+
+```text
+Each round pairs up lists and merges them -> number of rounds = log2(k), since the
+list count halves each round (4 lists -> 2 -> 1)
+Each round does O(N) total work across all its pairwise merges, since every node
+gets touched exactly once per round regardless of how many pairs it's split across
+Total: O(N) work per round x O(log k) rounds = O(N log k)
+
+Space: O(1) extra beyond input/output -- merging relinks existing nodes rather than
+allocating new ones; the `merged` list itself holds O(k) pointers per round
 ```
 
 ---
